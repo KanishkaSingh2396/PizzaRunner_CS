@@ -1,5 +1,322 @@
 # PizzaRunner_CS
-B. Runner_And_Custumer_Experience
+
+-- data cleaning for runner_orders table
+----------------------------------------------------
+create table runner_orders_1 as (
+select
+  order_id, 
+  runner_id, 
+  
+  case 
+    when pickup_time = 'null' then ''
+    else pickup_time
+  end as pickup_time,
+  
+  case
+    when cancellation is null or cancellation like 'null' then ''
+    else cancellation 
+  end as cancellation,
+  
+  case 
+    WHEN duration is null or duration like 'null' then ''
+    WHEN duration LIKE '%mins' THEN TRIM('mins' from duration) 
+    WHEN duration LIKE '%minute' THEN TRIM('minute' from duration)        
+    WHEN duration LIKE '%minutes' THEN TRIM('minutes' from duration)
+    else duration 
+  end as duration_mins,
+  
+  case
+  when distance is null or distance like 'null' then ''
+  when distance like '%km' then TRIM('km' from distance)
+  else distance
+  end as distance_km
+from pizza_runner.runner_orders)
+select* from runner_orders_1;
+
+![image](https://user-images.githubusercontent.com/89623051/141168858-9a531dfe-a18d-4d62-894a-933b5920ba25.png)
+
+
+--------------------------------------------
+---data cleaning customer_orders table
+create table customer_orders_1 as
+select
+order_id,
+customer_id, pizza_id, 
+case
+  when exclusions is null or exclusions like 'null' then ''
+  else exclusions
+end as exclusions,
+case
+  when extras is null or extras like 'null' then ''
+  else extras
+end as extras,
+order_time
+
+from pizza_runner.customer_orders;
+select* from customer_orders_1;
+
+![image](https://user-images.githubusercontent.com/89623051/141169061-00e3b91b-eaa1-4057-a339-e1ae965546fb.png)
+
+
+--------------------------------------------------------------
+**--Part A. Pizza Metrics**
+--1. How many pizzas were ordered?
+--table used: customer_orders
+select count(order_id) from pizza_runner.customer_orders;
+
+![image](https://user-images.githubusercontent.com/89623051/141169731-0dbd3265-5beb-4724-9e62-59ec4271eeff.png)
+
+
+--2. How many unique customer orders were made?
+select count(distinct order_id) from pizza_runner.customer_orders;
+
+![image](https://user-images.githubusercontent.com/89623051/141169808-cf7f3fce-1e38-4607-9c3a-fe822d51ee8b.png)
+  
+--3. How many successful orders were delivered by each runner?
+select cancellation 
+from runner_orders_1
+where cancellation = '';
+
+--------------------------------------------------
+---------------------------------------------------
+-- data cleaning for runner_orders table
+----------------------------------------------------
+drop table if exists runner_orders_1
+create table runner_orders_1 as (
+select
+  order_id, 
+  runner_id, 
+  
+  case 
+    when pickup_time = 'null' then ''
+    else pickup_time
+  end as pickup_time,
+  
+  case
+    when cancellation is null or cancellation like 'null' then ''
+    else cancellation 
+  end as cancellation,
+  
+  case 
+    WHEN duration is null or duration like 'null' then ''
+    WHEN duration LIKE '%mins' THEN TRIM('mins' from duration) 
+    WHEN duration LIKE '%minute' THEN TRIM('minute' from duration)        
+    WHEN duration LIKE '%minutes' THEN TRIM('minutes' from duration)
+    else duration 
+  end as duration_mins,
+  
+  case
+  when distance is null or distance like 'null' then ''
+  when distance like '%km' then TRIM('km' from distance)
+  else distance
+  end as distance_km
+from pizza_runner.runner_orders)
+select* from runner_orders_1;
+
+--------------------------------------------
+---data cleaning customer_orders table
+drop table if exists customer_orders_1
+create table customer_orders_1 as
+select
+order_id,
+customer_id, pizza_id, 
+case
+  when exclusions = 'null' then ''
+  else exclusions
+end as exclusions,
+case
+  when extras = 'null' then ''
+  else extras
+end as extras,
+order_time
+
+from pizza_runner.customer_orders;
+select* from customer_orders_1;
+
+--------------------------------------------------------------
+--Part A. Pizza Metrics
+--1. How many pizzas were ordered?
+--table used: customer_orders
+select count(order_id) from pizza_runner.customer_orders;
+
+--2. How many unique customer orders were made?
+select count(distinct order_id) from pizza_runner.customer_orders;
+  
+--3. How many successful orders were delivered by each runner?
+select* from runner_orders_1;
+
+select runner_id, count(cancellation) as completed_orders
+from runner_orders_1
+where cancellation = ''
+group by runner_id;
+
+![image](https://user-images.githubusercontent.com/89623051/141170308-83c32fd8-787a-45b3-9164-c31c6e9ebed5.png)
+
+--4. How many of each type of pizza was delivered?
+
+![image](https://user-images.githubusercontent.com/89623051/141170376-3c208a99-b4d4-42a7-9805-104843534a8c.png)
+
+
+  
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id)
+ 
+ 
+select pizza_name, count(*) as pizza_delivered
+from co_ro_pn_joined
+where cancellation = ''
+group by pizza_name;
+
+-------------------------------------------
+--5. How many Vegetarian and Meatlovers were ordered by each customer?
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id)
+
+select customer_id, 
+sum(CASE WHEN pizza_name = 'Meatlovers' THEN 1 ELSE 0 END) as Meatlovers,
+sum(CASE WHEN pizza_name = 'Vegetarian' THEN 2 ELSE 0 END) as Vegetarian
+from co_ro_pn_joined
+group by customer_id
+order by customer_id;
+
+
+![image](https://user-images.githubusercontent.com/89623051/141170490-18f19bfb-37a8-44ab-99cd-b45fffa12fa3.png)
+
+------------------------------------------
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id)
+  
+select customer_id, pizza_name,
+count(pizza_name) as pizza_ordered
+from co_ro_pn_joined
+group by customer_id, pizza_name
+order by customer_id;
+
+![image](https://user-images.githubusercontent.com/89623051/141170625-2e9b634b-6dda-4791-8840-82c87b8e7cfd.png)
+
+--------------------------------------------------
+--6. What was the maximum number of pizzas delivered in a single order?
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id)
+  
+select order_id, count( order_id) as max_del_in_singleOrder
+from co_ro_pn_joined
+group by order_id
+order by count( order_id) desc
+limit 1;
+
+![image](https://user-images.githubusercontent.com/89623051/141170762-607bf7bc-d9dc-44e6-b66b-d8420653cedf.png)
+
+
+--7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
+
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name, co.exclusions, co.extras, co.order_time
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id),
+  
+variation_tb as (
+  select customer_id, cancellation, exclusions, extras,
+    case 
+      when exclusions != '' or extras != '' then 'change'
+      else 'no change'
+    end as variation
+ from co_ro_pn_joined)
+ 
+select customer_id, count(variation), variation
+from variation_tb
+where cancellation = ''
+group by variation, customer_id
+order by customer_id
+
+![image](https://user-images.githubusercontent.com/89623051/141170866-8d868eac-607b-45b2-a5da-85f801f342c0.png)
+
+-----------------------------------------
+--8. How many pizzas were delivered that had both exclusions and extras?
+
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name, co.exclusions, co.extras
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id)
+
+select  count(order_id) as order_with_exc_extras
+from co_ro_pn_joined
+where exclusions != '' and extras != ''
+
+![image](https://user-images.githubusercontent.com/89623051/141170975-13f11a7f-260b-4793-b56e-cc6f5a04be6d.png)
+
+
+----9. What was the total volume of pizzas ordered for each hour of the day?
+
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name, co.exclusions, co.extras, co.order_time
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id),
+  
+hour_table as (select order_id, order_time,  
+  extract(HOUR from order_time) as hours
+from co_ro_pn_joined)
+
+select count(order_id) as pizza_volume_ordered, hours
+from hour_table
+group by hours
+order by hours
+
+![image](https://user-images.githubusercontent.com/89623051/141171082-f7157cfa-de4e-4dcf-9975-d13f5d3c94f9.png)
+
+
+--10. What was the volume of orders for each day of the week?
+with co_ro_pn_joined as(
+select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name, co.exclusions, co.extras, co.order_time
+from customer_orders_1 co
+join runner_orders_1 ro
+ on co.order_id = ro.order_id
+join pizza_runner.pizza_names pn 
+  on pn.pizza_id = co.pizza_id),
+  
+day_tb as (select 
+  To_Char(order_time, 'DAY') as day_of_week,
+  order_id
+from co_ro_pn_joined)
+
+select day_of_week, count (order_id) as pizza_count
+from day_tb
+group by day_of_week
+order by day_of_week
+
+![image](https://user-images.githubusercontent.com/89623051/141171274-ca625d8f-1faa-41f6-bb7d-d1c230363d4a.png)
+
+
+**B. Runner_And_Custumer_Experience**
 
 --Runner and Customer Experience
 
