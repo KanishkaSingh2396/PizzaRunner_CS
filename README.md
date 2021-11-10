@@ -9,6 +9,9 @@ select
 from pizza_runner.runners
 group by week_starting_date
 order by runners_count desc;
+
+![image](https://user-images.githubusercontent.com/89623051/141165486-e449103f-e866-471f-980f-1bfaf2d44d41.png)
+
  
 --2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
 
@@ -36,7 +39,9 @@ select avg(time_difference) as avg_arrival_time, runner_id
 from final_table
 group by runner_id
 order by runner_id
- 
+
+![image](https://user-images.githubusercontent.com/89623051/141165704-5f8742bf-1eee-4800-8f54-9d7d1333efd9.png)
+
 --3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
 with joined_table as (
   select 
@@ -64,6 +69,8 @@ from time_diff_tb
 where time_difference > 0
 group by order_id
 order by total_pizza desc, order_id
+
+![image](https://user-images.githubusercontent.com/89623051/141165768-f0a22343-6d9d-418e-b7dd-fa3778a69c46.png)
  
 --4. What was the average distance travelled for each customer?
 
@@ -80,7 +87,10 @@ select
 from dis_travelled_tb
 group by customer_id
 order by customer_id
- 
+
+![image](https://user-images.githubusercontent.com/89623051/141165838-a687fe6f-aeef-431a-ba6a-872452a5dc03.png)
+
+
 --5. What was the difference between the longest and shortest delivery times for all orders?
 with duration_cast as(
 select TO_NUMBER(duration_mins, '99') as duration_1
@@ -93,7 +103,10 @@ from duration_cast)
 
 select (max_duration - min_duration) as difference_in_duration
 from max_min_tb
- 
+
+![image](https://user-images.githubusercontent.com/89623051/141165897-63dac1da-51c6-46eb-a671-d7638d9fec15.png)
+
+
 --6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
 with joined_table as(
 select 
@@ -113,7 +126,9 @@ select
 from joined_table
 group by runner_id, order_id
 order by order_id
- 
+
+![image](https://user-images.githubusercontent.com/89623051/141165948-677926ed-b59b-4677-90fa-fdfdc6684a4d.png)
+
 
 --7. What is the successful delivery percentage for each runner?
 SELECT
@@ -124,5 +139,8 @@ SELECT
 FROM runner_orders_1
 GROUP BY runner_id
 ORDER BY runner_id;
+
+![image](https://user-images.githubusercontent.com/89623051/141165986-0a554c9c-567d-47ec-b71e-73426d3d5bfc.png)
+
  
 
