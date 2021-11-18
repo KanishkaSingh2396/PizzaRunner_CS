@@ -36,6 +36,8 @@ select
 from pizza_runner.runner_orders)
 select* from runner_orders_1;
 ```
+![image](https://user-images.githubusercontent.com/89623051/142488444-af56bfb6-2674-48a5-a7cb-1d0cccf0dbf1.png)
+
 --------------------------------------------
 ---data cleaning customer_orders table
 
@@ -58,6 +60,8 @@ order_time
 from pizza_runner.customer_orders;
 select* from customer_orders_1;
 ```
+![image](https://user-images.githubusercontent.com/89623051/142488641-57d20d3c-14ca-4f4a-879d-9f601d6b03fc.png)
+
 --------------------------------------------------------------
 --Part A. Pizza Metrics
 --1. How many pizzas were ordered?
@@ -65,12 +69,15 @@ select* from customer_orders_1;
 ```sql
 select count(order_id) from pizza_runner.customer_orders;
 ```
+![image](https://user-images.githubusercontent.com/89623051/142488775-2945a587-3ac4-478a-856d-56f0c3e22ab2.png)
 
 --2. How many unique customer orders were made?
 
 ```sql 
 select count(distinct order_id) from pizza_runner.customer_orders;
  ```
+ ![image](https://user-images.githubusercontent.com/89623051/142488895-76223df0-402e-4e6c-820d-7b2a78ac1c57.png)
+
 --3. How many successful orders were delivered by each runner?
 select* from runner_orders_1;
 ```sql
@@ -161,8 +168,7 @@ limit 1;
 
 ![image](https://user-images.githubusercontent.com/89623051/141170762-607bf7bc-d9dc-44e6-b66b-d8420653cedf.png)
 
-
---7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
+7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
 ```sql
 with co_ro_pn_joined as(
 select  co.order_id, co.customer_id, co.pizza_id, ro.runner_id, ro.cancellation, pn.pizza_name, co.exclusions, co.extras, co.order_time
@@ -423,6 +429,7 @@ join pizza_runner.pizza_toppings pt
 group by pizza_id
 order by pizza_id
 ```
+![image](https://user-images.githubusercontent.com/89623051/142489438-0b5b5c0a-c3a6-460b-9bec-30a2d357ef65.png)
 
 --Question 2 What was the most commonly added extra?
 ```sql
@@ -441,6 +448,7 @@ from count_tb
 left join pizza_runner.pizza_toppings pt
 on count_tb.topping_id = pt.topping_id
 ```
+![image](https://user-images.githubusercontent.com/89623051/142489534-70fbb8b5-4514-4be3-8297-e8f6bfe534a8.png)
 
 --Question 3 What was the most common exclusion?
 ```sql
@@ -461,6 +469,7 @@ left join pizza_runner.pizza_toppings pt
 on count_tb.topping_id = pt.topping_id
 order by topping_counts desc
 ```
+![image](https://user-images.githubusercontent.com/89623051/142489634-0bb4cab3-4422-4b50-8279-f40fb8b4568c.png)
 
 --Question 4. Generate an order item for each record in the customers_orders table in the format of one of the following: 
 -- Meat Lovers + Meat Lovers - Exclude Beef + Meat Lovers - Extra Bacon + Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
@@ -484,3 +493,6 @@ on st.pizza_id = pn.pizza_id
 left join pizza_runner.pizza_toppings pt
 on st.topping_id = pt.topping_id::text
 ```
+
+![image](https://user-images.githubusercontent.com/89623051/142489865-e3f209c2-c9ae-4842-b135-b341da85a5c1.png)
+
