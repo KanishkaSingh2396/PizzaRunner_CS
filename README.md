@@ -461,5 +461,82 @@ ORDER BY runner_id;
 
 ![image](https://user-images.githubusercontent.com/89623051/141165986-0a554c9c-567d-47ec-b71e-73426d3d5bfc.png)
 
+
+--Part C. Ingredient Optimisation
+
+--Question 1 What are the standard ingredients for each pizza?
+
+with regex_tb as (
+select pizza_id, REGEXP_SPLIT_TO_TABLE(toppings, '[,\s]+') as topping_id
+from pizza_runner.pizza_recipes )
+
+select* from regex_tb
+select  
+  pizza_id, 
+  STRING_AGG(pt.topping_name::TEXT, ', ') AS standard_ingredients
+from regex_tb rt
+join pizza_runner.pizza_toppings pt
+  on rt.topping_id:: text = pt.topping_id :: text
+group by pizza_id
+order by pizza_id
+
+
+--Question 2 What was the most commonly added extra?
+
+with extras_tb as(
+select order_id, pizza_id, extras from customer_orders_1 where extras != ''),
+
+count_tb as (select 
+  REGEXP_SPLIT_TO_TABLE(extras, '[,\s]+') :: int as topping_id,
+  count(*) as topping_counts
+from extras_tb
+group by topping_id
+order by topping_counts desc)
+
+select count_tb.topping_id, topping_name, topping_counts
+from count_tb 
+left join pizza_runner.pizza_toppings pt
+on count_tb.topping_id = pt.topping_id
+
+
+--Question 3 What was the most common exclusion?
+with exclusion_tb as(
+select order_id, pizza_id, exclusions 
+from customer_orders_1 
+where exclusions != ''),
+
+count_tb as (select 
+  REGEXP_SPLIT_TO_TABLE(exclusions, '[,\s]+') :: int as topping_id,
+  count(*) as topping_counts
+from exclusion_tb
+group by topping_id)
+
+select count_tb.topping_id, topping_name, topping_counts
+from count_tb 
+left join pizza_runner.pizza_toppings pt
+on count_tb.topping_id = pt.topping_id
+order by topping_counts desc
+
+--Question 4. Generate an order item for each record in the customers_orders table in the format of one of the following: 
+-- Meat Lovers + Meat Lovers - Exclude Beef + Meat Lovers - Extra Bacon + Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
+with adjusted_tb as(
+select order_id, customer_id, pizza_id, extras, exclusions from customer_orders_1),
+
+split_tb as (
+select 
+  order_id, 
+  customer_id,
+  pizza_id,
+  REGEXP_SPLIT_TO_TABLE(extras, '[,\s]+') :: text as topping_id,
+  REGEXP_SPLIT_TO_TABLE(exclusions, '[,\s]+') :: text as exclusions
+from adjusted_tb)
+
+select order_id, customer_id, st.pizza_id, pizza_name, topping_name, st.topping_id, exclusions
+from split_tb st
+join pizza_runner.pizza_names pn
+on st.pizza_id = pn.pizza_id
+left join pizza_runner.pizza_toppings pt
+on st.topping_id = pt.topping_id::text
+
  
 ```
