@@ -1,5 +1,5 @@
 # PizzaRunner_CS
-
+```sql
 -- data cleaning for runner_orders table
 ----------------------------------------------------
 create table runner_orders_1 as (
@@ -462,4 +462,4 @@ ORDER BY runner_id;
 ![image](https://user-images.githubusercontent.com/89623051/141165986-0a554c9c-567d-47ec-b71e-73426d3d5bfc.png)
 
  
-
+```
